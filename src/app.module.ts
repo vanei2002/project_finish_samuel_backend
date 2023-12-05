@@ -5,12 +5,12 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
 
 @Module({
-  // eslint-disable-next-line prettier/prettier
   imports: [
     // eslint-disable-next-line prettier/prettier
-  UsersModule,
+    UsersModule,
     // eslint-disable-next-line prettier/prettier
-   MongooseModule.forRoot('mongodb+srv://vaneimendes:ostenmoove@cluster0.qx4p4jp.mongodb.net/')],
+    MongooseModule.forRoot('mongodb+srv://vaneimendes:ostenmoove@cluster0.qx4p4jp.mongodb.net/versecert-api')
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
