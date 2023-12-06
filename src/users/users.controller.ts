@@ -17,7 +17,14 @@ export class UsersController {
 
   @Post('/create')
   create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    const data = this.usersService.create(createUserDto);
+    return data;
+  }
+
+  @Post('/sing')
+  singUser(@Body() createUserDto: CreateUserDto) {
+    const data = this.usersService.login(createUserDto);
+    return data;
   }
 
   @Get()
