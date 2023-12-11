@@ -7,9 +7,8 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { NewPassword, UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('auth')
 export class UsersController {
@@ -27,14 +26,24 @@ export class UsersController {
     return data;
   }
 
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
+  @Post('/reset_password')
+  resetPassword(@Body() createUserDto: CreateUserDto) {
+    const data = this.usersService.resetPassword(createUserDto);
+    return data;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  @Post('/validate_code')
+  validateCode(@Body() createUserDto: CreateUserDto) {
+    const data = this.usersService.validateCode(createUserDto);
+    return data;
+  }
+
+  @Get()
+  findAll() {}
+
+  @Patch('/update_password')
+  update(@Body() updateUserDto: NewPassword) {
+    return this.usersService.updatePassword(updateUserDto);
   }
 
   @Delete(':id')

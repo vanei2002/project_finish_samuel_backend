@@ -1,16 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { User } from './schemas/user.schema';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
+import { generateRandomToken } from 'src/utils/token';
 
 interface Login extends CreateUserDto {
   _id: ObjectId;
   __v: number;
 }
+
+export interface ResetPassword extends CreateUserDto {
+  _doc?: object | any;
+  token: string;
+}
+
+export interface NewPassword {
+  password: {
+    password: string;
+    confirmPassword: string;
+  };
+  cpf: string;
+}
+
+const secretKey = 'ertyubino';
+let tokenTemp;
 
 @Injectable()
 export class UsersService {
@@ -22,7 +38,7 @@ export class UsersService {
     });
 
     try {
-      if (!validateUser) {
+      if (validateUser) {
         return {
           message: 'User already exists',
           status: 409,
@@ -34,8 +50,10 @@ export class UsersService {
 
       const user = new this.userModel({ ...createUserDto, password });
 
+      user.save();
+
       return {
-        data: user.save(),
+        data: user,
         message: 'User created successfully',
         status: 201,
       };
@@ -69,10 +87,9 @@ export class UsersService {
           status: 401,
         };
       }
-      const secretKey = 'ertyubino';
 
       const token = jwt.sign({ validateData }, secretKey, {
-        expiresIn: '1h',
+        expiresIn: '24h',
       });
 
       return {
@@ -87,17 +104,86 @@ export class UsersService {
     }
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async resetPassword(e: CreateUserDto) {
+    const user: ResetPassword = await this.userModel.findOne({
+      email: e.email,
+    });
+
+    try {
+      if (!user) {
+        return {
+          message: 'user not found',
+          status: 404,
+        };
+      }
+
+      tokenTemp = generateRandomToken(6);
+
+      setTimeout(
+        () => {
+          tokenTemp = null;
+        },
+        1000 * 60 * 3,
+      );
+
+      const data: ResetPassword = {
+        ...user._doc,
+        token: tokenTemp,
+      };
+
+      return {
+        data,
+        message: 'token created successfully',
+        status: 201,
+      };
+    } catch (err) {
+      return {
+        message: 'erro systen',
+        status: 404,
+      };
+    }
+  }
+
+  async validateCode(createUserDto: CreateUserDto) {
+    const { token } = createUserDto;
+
+    console.log(tokenTemp);
+
+    if (token !== tokenTemp) {
+      return {
+        data: false,
+        message: 'incorrect code',
+        status: 401,
+      };
+    }
+
+    return {
+      data: true,
+      message: 'code validated successfully',
+      status: 200,
+    };
+  }
+
+  async updatePassword({ cpf, password }: NewPassword) {
+    const user = await this.userModel.findOne({ cpf });
+
+    if (!user) {
+      return {
+        message: 'user not found',
+        status: 404,
+      };
+    }
+
+    await this.userModel.updateOne({ password: password.password });
+
+    return {
+      message: 'password updated successfully',
+      status: 200,
+    };
   }
 
   findOne(id: number) {
     return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    console.log(updateUserDto);
-    return `This action updates a #${id} user`;
   }
 
   remove(id: number) {

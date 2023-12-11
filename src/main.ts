@@ -4,11 +4,18 @@ import * as dotenv from 'dotenv';
 import * as cors from 'cors';
 
 async function bootstrap() {
-  dotenv.config();
-
   const app = await NestFactory.create(AppModule);
 
   app.use(cors());
-  await app.listen(8080);
+
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Accept',
+  });
+
+  await app.listen(3333);
+
+  dotenv.config();
 }
 bootstrap();
