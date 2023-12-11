@@ -34,7 +34,7 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     const validateUser = await this.userModel.findOne({
-      cpf: createUserDto.cpf,
+      email: createUserDto.email,
     });
 
     try {
