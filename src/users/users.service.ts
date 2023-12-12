@@ -17,6 +17,10 @@ export interface ResetPassword extends CreateUserDto {
   token: string;
 }
 
+export interface RegisterCode extends CreateUserDto {
+  _doc?: object | any;
+  token: string;
+}
 export interface NewPassword {
   password: {
     password: string;
@@ -27,12 +31,14 @@ export interface NewPassword {
 
 const secretKey = 'ertyubino';
 let tokenTemp;
+let tokenTempCreate;
 
 @Injectable()
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
   async create(createUserDto: CreateUserDto) {
+    console.log(createUserDto);
     const validateUser = await this.userModel.findOne({
       email: createUserDto.email,
     });
@@ -49,11 +55,19 @@ export class UsersService {
       const password = await bcrypt.hash(createUserDto.password, saltOrRounds);
 
       const user = new this.userModel({ ...createUserDto, password });
+      tokenTempCreate = generateRandomToken(6);
+
+      setTimeout(
+        () => {
+          tokenTempCreate = null;
+        },
+        1000 * 60 * 3,
+      );
 
       user.save();
 
       return {
-        data: user,
+        data: { user, tokenTempCreate },
         message: 'User created successfully',
         status: 201,
       };
@@ -94,6 +108,46 @@ export class UsersService {
 
       return {
         data: { validateData, token },
+        status: 201,
+      };
+    } catch (err) {
+      return {
+        message: 'erro systen',
+        status: 404,
+      };
+    }
+  }
+
+  async CodeRegister(e: CreateUserDto) {
+    const user: RegisterCode = await this.userModel.findOne({
+      email: e.email,
+    });
+
+    try {
+      if (!user) {
+        return {
+          message: 'user not found',
+          status: 404,
+        };
+      }
+
+      tokenTemp = generateRandomToken(6);
+
+      setTimeout(
+        () => {
+          tokenTemp = null;
+        },
+        1000 * 60 * 3,
+      );
+
+      const data: RegisterCode = {
+        ...user._doc,
+        token: tokenTemp,
+      };
+
+      return {
+        data,
+        message: 'token created successfully',
         status: 201,
       };
     } catch (err) {
@@ -145,11 +199,13 @@ export class UsersService {
   }
 
   async validateCode(createUserDto: CreateUserDto) {
-    const { token } = createUserDto;
+    const { token, text } = createUserDto;
+    const validaterouter = text === 'reset' ? tokenTemp : tokenTempCreate;
+    console.log(createUserDto);
 
-    console.log(tokenTemp);
+    console.log(validaterouter);
 
-    if (token !== tokenTemp) {
+    if (token !== validaterouter) {
       return {
         data: false,
         message: 'incorrect code',
