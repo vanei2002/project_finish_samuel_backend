@@ -17,10 +17,6 @@ export interface ResetPassword extends CreateUserDto {
   token: string;
 }
 
-export interface RegisterCode extends CreateUserDto {
-  _doc?: object | any;
-  token: string;
-}
 export interface NewPassword {
   password: {
     password: string;
@@ -119,7 +115,7 @@ export class UsersService {
   }
 
   async CodeRegister(e: CreateUserDto) {
-    const user: RegisterCode = await this.userModel.findOne({
+    const user: ResetPassword = await this.userModel.findOne({
       email: e.email,
     });
 
@@ -140,7 +136,7 @@ export class UsersService {
         1000 * 60 * 3,
       );
 
-      const data: RegisterCode = {
+      const data: ResetPassword = {
         ...user._doc,
         token: tokenTemp,
       };

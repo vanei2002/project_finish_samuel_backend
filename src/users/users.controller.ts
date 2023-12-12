@@ -32,6 +32,12 @@ export class UsersController {
     return data;
   }
 
+  @Post('/register')
+  CodeRegister(@Body() createUserDto: CreateUserDto) {
+    const data = this.usersService.CodeRegister(createUserDto);
+    return data;
+  }
+
   @Post('/validate_code')
   validateCode(@Body() createUserDto: CreateUserDto) {
     const data = this.usersService.validateCode(createUserDto);
