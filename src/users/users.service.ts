@@ -5,7 +5,8 @@ import { Model, ObjectId } from 'mongoose';
 import { User } from './schemas/user.schema';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
-import { generateRandomToken } from 'src/utils/token';
+import { generateRandomToken } from 'utils/token';
+import { RabbitMQService } from 'src/rabbitmq/rabbitmq.service';
 
 interface Login extends CreateUserDto {
   _id: ObjectId;
@@ -22,16 +23,23 @@ export interface NewPassword {
     password: string;
     confirmPassword: string;
   };
-  cpf: string;
+  email: string;
 }
 
 const secretKey = 'ertyubino';
+<<<<<<< HEAD
 let tokenTemp;
 let tokenTempCreate;
+=======
+let tokenTemp: string | any = null;
+>>>>>>> refs/remotes/origin/users
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    private readonly rabbitmq: RabbitMQService,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     console.log(createUserDto);
@@ -155,6 +163,7 @@ export class UsersService {
   }
 
   async resetPassword(e: CreateUserDto) {
+    console.log(e);
     const user: ResetPassword = await this.userModel.findOne({
       email: e.email,
     });
@@ -176,9 +185,20 @@ export class UsersService {
         1000 * 60 * 3,
       );
 
+      this.rabbitmq.emit({
+        pattern: 'Email reset password',
+        data: {
+          status: 'error',
+          errors: '',
+          data: {
+            signatureRequestId: '',
+            signatureSummaryId: '',
+          },
+        },
+      });
+
       const data: ResetPassword = {
         ...user._doc,
-        token: tokenTemp,
       };
 
       return {
@@ -216,8 +236,8 @@ export class UsersService {
     };
   }
 
-  async updatePassword({ cpf, password }: NewPassword) {
-    const user = await this.userModel.findOne({ cpf });
+  async updatePassword({ email, password }: NewPassword) {
+    const user = await this.userModel.findOne({ email });
 
     if (!user) {
       return {
