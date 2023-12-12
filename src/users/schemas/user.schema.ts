@@ -9,10 +9,7 @@ export class User {
   name: string;
 
   @Prop()
-  latsName: string;
-
-  @Prop()
-  cpf: string;
+  lastName: string;
 
   @Prop()
   email: string;

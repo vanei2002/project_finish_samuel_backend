@@ -1,7 +1,7 @@
 export class CreateUserDto {
   name: string;
   cpf: string;
-  latsName: string;
+  lastName: string;
   email: string;
   password: string;
   token?: string;
