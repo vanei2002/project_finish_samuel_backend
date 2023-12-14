@@ -10,12 +10,6 @@ export class User {
 
   @Prop()
   lastName: string;
-<<<<<<< HEAD
-
-  @Prop()
-  cpf: string;
-=======
->>>>>>> refs/remotes/origin/users
 
   @Prop()
   email: string;

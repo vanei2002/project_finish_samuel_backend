@@ -9,8 +9,8 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         name: 'rmq-summarizer',
         transport: Transport.RMQ,
         options: {
-          urls: [process.env.RMQ_URL],
-          queue: 'summarizer.response',
+          urls: ['amqp://guest:guest@127.0.0.1:5672/'],
+          queue: 'notifications.request',
           queueOptions: {
             durable: true,
           },
