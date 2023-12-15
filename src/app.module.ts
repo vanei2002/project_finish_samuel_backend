@@ -8,7 +8,7 @@ import { UsersModule } from './users/users.module';
     // eslint-disable-next-line prettier/prettier
     UsersModule,
     // eslint-disable-next-line prettier/prettier
-    MongooseModule.forRoot('mongodb+srv://vaneimendes:ostenmoove@cluster0.qx4p4jp.mongodb.net/versecert-api')
+    MongooseModule.forRoot('Link do banco')
     // MongooseModule.forRoot(`${process.env.CONNECT_DB}`),
   ],
 })

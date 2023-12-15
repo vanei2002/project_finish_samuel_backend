@@ -5,12 +5,8 @@ import { Model, ObjectId } from 'mongoose';
 import { User } from './schemas/user.schema';
 
 import { generateRandomToken } from 'utils/token';
-import { RabbitMQService } from 'src/rabbitmq/rabbitmq.service';
-import * as handlebars from 'handlebars';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
-import * as path from 'path';
-import * as fs from 'fs';
 
 interface Login extends CreateUserDto {
   _id: ObjectId;
@@ -37,51 +33,7 @@ let tokenTempCreate;
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectModel(User.name) private userModel: Model<User>,
-    private readonly rabbitmq: RabbitMQService,
-  ) {}
-
-  async sendEmail(user: any, code: string) {
-    console.log(user, code);
-    try {
-      const filePath = path.join(
-        process.cwd(),
-        'src/template/reset_user.html.hbs',
-      );
-
-      const templateContent = fs.readFileSync(filePath, 'utf-8').toString();
-
-      const compiledTemplate = handlebars.compile(templateContent);
-
-      const emailContent = compiledTemplate({ code: 'teste', absoluteUrl: '' });
-
-      await this.rabbitmq.emit({
-        pattern: 'send-notification',
-        data: {
-          sender: {
-            name: 'Verse Cert',
-            email: 'mario.santos@ostenmoove.com.br',
-          },
-          notification: {
-            type: 'EMAIL',
-            content: emailContent,
-            subject: 'ds',
-          },
-
-          recipients: [
-            {
-              userId: 'user._id',
-              name: 'user.name',
-              email: 'vanei.mendes@ostenmoove.com.br',
-            },
-          ],
-        },
-      });
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
   async create(createUserDto: CreateUserDto) {
     console.log(createUserDto);
@@ -109,8 +61,6 @@ export class UsersService {
         },
         1000 * 60 * 3,
       );
-
-      this.sendEmail(user, tokenTempCreate);
 
       user.save();
 
@@ -220,8 +170,6 @@ export class UsersService {
       }
 
       tokenTemp = generateRandomToken(6);
-
-      this.sendEmail(user, tokenTemp);
 
       setTimeout(
         () => {
