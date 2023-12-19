@@ -36,7 +36,6 @@ export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
   async create(createUserDto: CreateUserDto) {
-    console.log(createUserDto);
     const validateUser = await this.userModel.findOne({
       email: createUserDto.email,
     });
@@ -54,13 +53,6 @@ export class UsersService {
 
       const user = new this.userModel({ ...createUserDto, password });
       tokenTempCreate = generateRandomToken(6);
-
-      setTimeout(
-        () => {
-          tokenTempCreate = null;
-        },
-        1000 * 60 * 3,
-      );
 
       user.save();
 
